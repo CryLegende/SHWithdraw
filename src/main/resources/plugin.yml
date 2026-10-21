@@ -1,0 +1,37 @@
+name: SHWithdraw
+version: '${project.version}'
+main: org.Cry_Legende.sHWithdraw.SHWithdraw
+api-version: '1.21'
+author: Cry_Legende
+description: Chèques de SHCoins et bouteilles d'EXP (remplace BeastWithdraw, compatible avec ses objets)
+depend: [Vault, NBTAPI]
+softdepend: [Essentials]
+
+commands:
+  cheque:
+    description: Transforme des SHCoins en chèque.
+    usage: /cheque <montant|all> [nombre]
+  xpbottle:
+    description: Met de l'EXP en bouteille.
+    usage: /xpbottle <xp|all|<niveaux>l> [nombre]
+  shwithdraw:
+    description: Administration des chèques et bouteilles d'EXP.
+    usage: /shwithdraw <givecashnote|givecashnoteall|givexpbottle|givexpbottleall|reload>
+    permission: shwithdraw.admin
+
+permissions:
+  shwithdraw.cheque.withdraw:
+    description: /cheque (shwithdraw.cheque.withdraw.all pour /cheque all)
+    default: false
+  shwithdraw.cheque.redeem:
+    description: Encaisser un chèque
+    default: false
+  shwithdraw.xpbottle.withdraw:
+    description: /xpbottle (shwithdraw.xpbottle.withdraw.all pour /xpbottle all)
+    default: false
+  shwithdraw.xpbottle.redeem:
+    description: Boire une bouteille d'EXP
+    default: false
+  shwithdraw.admin:
+    description: Commandes /shwithdraw (give, reload) et contournement des limites et taxes
+    default: op
