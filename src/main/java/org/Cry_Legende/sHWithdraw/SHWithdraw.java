@@ -2,12 +2,14 @@ package org.Cry_Legende.sHWithdraw;
 
 import io.papermc.paper.event.player.PlayerPurchaseEvent;
 import net.milkbowl.vault.economy.Economy;
+import org.Cry_Legende.sHWithdraw.utils.ActionLog;
 import org.bukkit.Bukkit;
 import org.bukkit.block.Crafter;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.ThrownExpBottle;
 import org.bukkit.event.EventHandler;
@@ -25,22 +27,35 @@ import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.StringUtil;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
 public class SHWithdraw extends JavaPlugin implements Listener, CommandExecutor, TabCompleter {
 
     private static final String ADMIN = "shwithdraw.admin";
+    // Valeurs de logs.<objet>.<clé> quand elles manquent dans config.yml
+    private static final Map<String, String> LOG_DEFAULTS = Map.of(
+        "cheque.fichier", "cheques",
+        "cheque.creation", "%player% -> crée %count% x chèque de %amount% SHCoins (%total% SHCoins retirés, taxe %tax% SHCoins)",
+        "cheque.encaissement", "%player% -> encaisse un chèque de %amount% SHCoins",
+        "cheque.don", "%sender% -> donne %count% x chèque de %amount% SHCoins à %player%",
+        "bouteille.fichier", "bouteilles-exp",
+        "bouteille.creation", "%player% -> crée %count% x bouteille d'EXP de %amount% EXP (%total% EXP retirés, taxe %tax% EXP)",
+        "bouteille.encaissement", "%player% -> utilise une bouteille d'EXP de %amount% EXP",
+        "bouteille.don", "%sender% -> donne %count% x bouteille d'EXP de %amount% EXP à %player%");
 
     private final NoteType cash = new NoteType("cheque", "shwithdraw.cheque");
     private final NoteType xp = new NoteType("bouteille", "shwithdraw.xpbottle");
     // Le clic droit arrive parfois deux fois (main + seconde main) : un encaissement par clic
     private final Set<UUID> redeemDelay = new HashSet<>();
     private Economy economy;
+    private YamlConfiguration messages;
     private boolean dropOnFloor;
     private boolean wholeAmounts;
     private boolean blockCrafts;
@@ -66,6 +81,10 @@ public class SHWithdraw extends JavaPlugin implements Listener, CommandExecutor,
 
     private void loadSettings() {
         reloadConfig();
+        if (!new File(getDataFolder(), "messages.yml").exists()) {
+            saveResource("messages.yml", false);
+        }
+        messages = YamlConfiguration.loadConfiguration(new File(getDataFolder(), "messages.yml"));
         dropOnFloor = getConfig().getBoolean("deposer-au-sol", true);
         wholeAmounts = getConfig().getBoolean("montants-entiers", true);
         blockCrafts = getConfig().getBoolean("bloquer-crafts", true);
@@ -172,6 +191,8 @@ public class SHWithdraw extends JavaPlugin implements Listener, CommandExecutor,
             msg(player, type.id + ".taxe", "%tax%", type.format(tax * count));
         }
         give(player, type.create(amount - tax, count, player.getName()));
+        log(type, "creation", "%player%", player.getName(), "%count%", String.valueOf(count),
+            "%amount%", type.format(amount - tax), "%total%", type.format(total), "%tax%", type.format(tax * count));
         msg(player, type.id + ".creation", "%taken-amount%", type.format(total), "%balance%", type.format(balance(type, player)));
         sound(player, type.soundCreate);
         return true;
@@ -209,8 +230,7 @@ public class SHWithdraw extends JavaPlugin implements Listener, CommandExecutor,
             case "givecashnoteall" -> give(sender, cash, args, true);
             case "givexpbottle", "givexpb" -> give(sender, xp, args, false);
             case "givexpbottleall", "givexpball" -> give(sender, xp, args, true);
-            default ->
-                getConfig().getStringList("messages.aide-admin").forEach(line -> sender.sendMessage(NoteType.color(line)));
+            default -> messages.getStringList("aide-admin").forEach(line -> sender.sendMessage(NoteType.color(line)));
         }
         return true;
     }
@@ -221,7 +241,7 @@ public class SHWithdraw extends JavaPlugin implements Listener, CommandExecutor,
     private void give(CommandSender sender, NoteType type, String[] args, boolean all) {
         int first = all ? 1 : 2;
         if (args.length <= first) {
-            getConfig().getStringList("messages.aide-admin").forEach(line -> sender.sendMessage(NoteType.color(line)));
+            messages.getStringList("aide-admin").forEach(line -> sender.sendMessage(NoteType.color(line)));
             return;
         }
         List<Player> targets = new ArrayList<>();
@@ -251,9 +271,11 @@ public class SHWithdraw extends JavaPlugin implements Listener, CommandExecutor,
             return;
         }
         String signer = args.length > first + 2 ? args[first + 2] : null;
-        String noteAmount = count > 1 ? "&7(x" + count + ")" : "";
+        String noteAmount = count > 1 ? messages.getString("quantite", "&7(x%count%)").replace("%count%", String.valueOf(count)) : "";
         for (Player target : targets) {
             give(target, type.create(amount, count, signer));
+            log(type, "don", "%sender%", sender.getName(), "%player%", target.getName(),
+                "%count%", String.valueOf(count), "%amount%", type.format(amount));
             msg(target, type.id + (all ? ".donne-a-tous" : ".recu"), "%received-amount%", type.format(amount), "%note-amount%", noteAmount);
         }
         if (sender instanceof Player && !all) {
@@ -300,12 +322,16 @@ public class SHWithdraw extends JavaPlugin implements Listener, CommandExecutor,
             // Bouteille lancée : l'EXP est fixée à l'impact (onBottle)
             ThrownExpBottle bottle = player.launchProjectile(ThrownExpBottle.class);
             bottle.setItem(single);
+            log(type, "encaissement", "%player%", player.getName(), "%amount%", type.format(value));
             return;
         }
         if (type == cash) {
-            economy.depositPlayer(player, value);
+            if (economy.depositPlayer(player, value).transactionSuccess()) {
+                log(type, "encaissement", "%player%", player.getName(), "%amount%", type.format(value));
+            }
         } else {
             setTotalXp(player, totalXp(player) + (int) value);
+            log(type, "encaissement", "%player%", player.getName(), "%amount%", type.format(value));
         }
         msg(player, type.id + ".encaissement", "%received-amount%", type.format(value), "%balance%", type.format(balance(type, player)));
         sound(player, type.soundRedeem);
@@ -383,7 +409,7 @@ public class SHWithdraw extends JavaPlugin implements Listener, CommandExecutor,
     }
 
     private void msg(CommandSender sender, String key, String... replacements) {
-        String message = getConfig().getString("messages." + key, "");
+        String message = messages.getString(key, "");
         if (message.isEmpty()) {
             return;
         }
@@ -393,6 +419,16 @@ public class SHWithdraw extends JavaPlugin implements Listener, CommandExecutor,
         for (String line : message.split("\n")) {
             sender.sendMessage(NoteType.color(line));
         }
+    }
+
+    /** Écrit dans SHLogs la ligne logs.&lt;objet&gt;.&lt;clé&gt; dont les variables sont remplacées. */
+    private void log(NoteType type, String key, String... replacements) {
+        String path = "logs." + type.id + ".";
+        String line = getConfig().getString(path + key, LOG_DEFAULTS.get(type.id + "." + key));
+        for (int i = 0; i + 1 < replacements.length; i += 2) {
+            line = line.replace(replacements[i], replacements[i + 1]);
+        }
+        ActionLog.write(this, getConfig().getString(path + "fichier", LOG_DEFAULTS.get(type.id + ".fichier")), line);
     }
 
     private static Integer parseInt(String raw) {

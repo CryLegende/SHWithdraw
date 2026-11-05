@@ -1,0 +1,42 @@
+# Messages envoyés aux joueurs par SHWithdraw.
+
+pas-un-nombre: '&7&l« &c&lSH &8&l» &7&c%amount% &7n''est pas un nombre valide.'
+pas-de-permission: '&7&l« &c&lSH &8&l» &7Vous n''avez pas la &cpermission&7.'
+console: '&7&l« &c&lSH &8&l» &7Commande réservée aux &cjoueurs&7.'
+max-par-commande: '&7&l« &c&lSH &8&l» &7Vous ne pouvez pas en créer plus de &c%stack% &7à la fois.'
+inventaire-plein: '&7&l« &c&lSH &8&l» &7Votre inventaire est &cplein&7.'
+joueur-introuvable: '&7&l« &c&lSH &8&l» &7Le joueur &c%player% &7n''est pas en ligne.'
+craft-bloque: '&7&l« &c&lSH &8&l» &7Les chèques et bouteilles d''EXP ne peuvent pas être &cutilisés ici&7.'
+recharge: '&7&l« &a&lSH &8&l» &7Configuration &arechargée&7.'
+aide-admin:
+  - '&7&l« &e&lSH &8&l» &e/shwithdraw givecashnote <joueur> <montant> [nombre] [signataire]'
+  - '&7&l« &e&lSH &8&l» &e/shwithdraw givecashnoteall <montant> [nombre] [signataire]'
+  - '&7&l« &e&lSH &8&l» &e/shwithdraw givexpbottle <joueur> <xp> [nombre] [enchanteur]'
+  - '&7&l« &e&lSH &8&l» &e/shwithdraw givexpbottleall <xp> [nombre] [enchanteur]'
+  - '&7&l« &e&lSH &8&l» &e/shwithdraw reload'
+admin-donne: '&7&l« &a&lSH &8&l» &e%player% &7a reçu &a%received-amount% &7%note-amount%'
+cheque:
+  aide: "&7&l« &e&lSH &8&l» &fVous avez &e%balance% SHCoins\n&7&l« &6&lSH &8&l» &7Utilisez &6/cheque <montant>/<all> <nombre>"
+  pas-assez: '&7&l« &c&lSH &8&l» &cVous n''avez pas assez de SHCoins ! (&c%balance%&7/&c%taken-amount%&7SHC)'
+  creation: '&7&l« &a&lSH &8&l» &7Chèque créé, &6-%taken-amount% SHCoins'
+  encaissement: '&7&l« &a&lSH &8&l» &7Chèque encaissé, &a+%received-amount% SHCoins'
+  min: '&7&l« &c&lSH &8&l» &cVous ne pouvez pas faire un chèque de moins de &c%min-amount% SHCoins'
+  max: '&7&l« &c&lSH &8&l» &cVous ne pouvez pas faire un chèque de plus de &c%max-amount% SHCoins'
+  recu: '&7&l« &a&lSH &8&l» &7Vous avez reçu un chèque de &a%received-amount% SHCoins ! %note-amount%'
+  donne-a-tous: '&7&l« &d&lSH &8&l» &dTous les joueurs ont reçu un chèque de &5%received-amount% SHCoins &d!'
+  taxe: '&7&l« &e&lSH &8&l» &7Vous avez payé &e%tax% SHC &7de taxes pour cette transaction'
+  echec: '&7&l« &c&lSH &8&l» &7Transaction échouée, veuillez essayer avec un autre montant!'
+bouteille:
+  aide: "&7&l« &a&lSH &8&l» &fVous avez &a%balance% EXP\n&7&l« &6&lSH &8&l» &7Utilisez &6/xpBottle <xp>/<all>/<xp>L <nombre>"
+  pas-assez: '&7&l« &c&lSH &8&l» &7Vous n''avez pas assez d''EXP ! (&c%balance%&7/&c%taken-amount%&7)'
+  pas-assez-niveaux: '&7&l« &c&lSH &8&l» &7Vous n''avez pas assez d''EXP !'
+  creation: '&7&l« &a&lSH &8&l» &7Experience mise en bouteille, &6-%taken-amount% EXP'
+  encaissement: '&7&l« &a&lSH &8&l» &7Ajout de &a%received-amount% EXP'
+  min: '&7&l« &c&lSH &8&l» &7Vous ne pouvez pas enchanter moins de &c%min-amount% EXP'
+  max: '&7&l« &c&lSH &8&l» &7Vous ne pouvez pas enchanter plus de &c%max-amount% EXP'
+  recu: '&7&l« &a&lSH &8&l» &7Vous avez reçu une bouteille d''EXP de &a%received-amount% EXP %note-amount%'
+  donne-a-tous: '&7&l« &d&lSH &8&l» &dTous les joueurs ont reçu une bouteille de &5%received-amount% EXP &d!'
+  taxe: '&7&l« &e&lSH &8&l» &7Vous avez payé &e%tax% EXP &7de taxes pour cette transaction'
+  echec: '&7&l« &c&lSH &8&l» &7Transaction échouée, veuillez réessayer.'
+# Texte de %note-amount% dans les messages de don quand plusieurs objets sont donnés.
+quantite: '&7(x%count%)'

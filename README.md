@@ -16,12 +16,14 @@
 
 Chèques de SHCoins et bouteilles d'EXP (remplace BeastWithdraw, compatible avec ses objets)
 
+Les créations, encaissements et dons sont écrits dans SHLogs (`plugins/SHLogs/SHWithdraw/`) : le fichier `cheques` pour les chèques et `bouteilles-exp` pour les bouteilles.
+
 Utilisé sur : **Opale**.
 
 ## Dépendances
 
 - Obligatoires : `Vault`, `NBTAPI`
-- Optionnelles : `Essentials`
+- Optionnelles : `Essentials`, `SHLogs`
 
 ## Commandes
 
@@ -47,7 +49,8 @@ Fichiers par défaut repris du serveur (secrets remplacés par `CHANGE_ME`). Cli
 
 <pre>
 plugins/SHWithdraw/
-└── <a href="src/main/resources/config.yml">config.yml</a>
+├── <a href="src/main/resources/config.yml">config.yml</a>
+└── <a href="src/main/resources/messages.yml">messages.yml</a>
 </pre>
 
 ## Compilation
