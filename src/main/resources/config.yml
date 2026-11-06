@@ -46,7 +46,7 @@ cheque:
   # Pourcentage retiré de la valeur du chèque
   taxe: 5
   format: '###,##0.00'
-  son-creation: entity.generic.explode
+  son-creation: item.book.page_turn
   son-encaissement: entity.experience_orb.pickup
 
 bouteille:
@@ -71,7 +71,7 @@ bouteille:
   format: '###,##0'
   # true : l'EXP est ajoutée directement au clic droit ; false : la bouteille est lancée
   ramassage-auto: true
-  son-creation: entity.generic.explode
+  son-creation: item.bottle.fill
   son-encaissement: entity.experience_orb.pickup
 
 # Lignes écrites dans SHLogs (plugins/SHLogs/SHWithdraw/).
