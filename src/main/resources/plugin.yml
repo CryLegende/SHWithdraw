@@ -16,22 +16,56 @@ commands:
     usage: /xpbottle <xp|all|<niveaux>l> [nombre]
   shwithdraw:
     description: Administration des chèques et bouteilles d'EXP.
-    usage: /shwithdraw <givecashnote|givecashnoteall|givexpbottle|givexpbottleall|reload>
-    permission: shwithdraw.admin
+    usage: /shwithdraw <givecashnote|givecashnoteall|givexpbottle|givexpbottleall|info|reload>
 
 permissions:
   shwithdraw.cheque.withdraw:
-    description: /cheque (shwithdraw.cheque.withdraw.all pour /cheque all)
+    description: /cheque
     default: false
+  shwithdraw.cheque.withdraw.all:
+    description: /cheque all
+    default: op
   shwithdraw.cheque.redeem:
     description: Encaisser un chèque
     default: false
   shwithdraw.xpbottle.withdraw:
-    description: /xpbottle (shwithdraw.xpbottle.withdraw.all pour /xpbottle all)
+    description: /xpbottle
     default: false
+  shwithdraw.xpbottle.withdraw.all:
+    description: /xpbottle all
+    default: op
   shwithdraw.xpbottle.redeem:
     description: Boire une bouteille d'EXP
     default: false
+  shwithdraw.bypass:
+    description: Pas de minimum, de maximum ni de taxe sur /cheque et /xpbottle
+    default: op
   shwithdraw.admin:
-    description: Commandes /shwithdraw (give, reload) et contournement des limites et taxes
+    description: Toutes les sous-commandes de /shwithdraw et le contournement des limites et taxes
+    default: op
+    children:
+      shwithdraw.admin.givecashnote: true
+      shwithdraw.admin.givecashnoteall: true
+      shwithdraw.admin.givexpbottle: true
+      shwithdraw.admin.givexpbottleall: true
+      shwithdraw.admin.info: true
+      shwithdraw.admin.reload: true
+      shwithdraw.bypass: true
+  shwithdraw.admin.givecashnote:
+    description: /shwithdraw givecashnote (donner un chèque à un joueur)
+    default: op
+  shwithdraw.admin.givecashnoteall:
+    description: /shwithdraw givecashnoteall (donner un chèque à tous les joueurs en ligne)
+    default: op
+  shwithdraw.admin.givexpbottle:
+    description: /shwithdraw givexpbottle (donner une bouteille d'EXP à un joueur)
+    default: op
+  shwithdraw.admin.givexpbottleall:
+    description: /shwithdraw givexpbottleall (donner une bouteille d'EXP à tous les joueurs en ligne)
+    default: op
+  shwithdraw.admin.info:
+    description: /shwithdraw info (valeur stockée dans le chèque ou la bouteille tenu en main)
+    default: op
+  shwithdraw.admin.reload:
+    description: /shwithdraw reload (recharger config.yml et messages.yml)
     default: op

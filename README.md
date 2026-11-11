@@ -29,19 +29,30 @@ Utilisé sur : **Opale**.
 
 | Commande | Alias | Description | Permission |
 |---|---|---|---|
-| `/cheque` | — | Transforme des SHCoins en chèque. | — |
-| `/xpbottle` | — | Met de l'EXP en bouteille. | — |
-| `/shwithdraw` | — | Administration des chèques et bouteilles d'EXP. | `shwithdraw.admin` |
+| `/cheque <montant\|all> [nombre]` | — | Transforme des SHCoins en chèque. | `shwithdraw.cheque.withdraw` (`all` : `shwithdraw.cheque.withdraw.all`) |
+| `/xpbottle <xp\|all\|<niveaux>l> [nombre]` | — | Met de l'EXP en bouteille. | `shwithdraw.xpbottle.withdraw` (`all` : `shwithdraw.xpbottle.withdraw.all`) |
+| `/shwithdraw givecashnote <joueur> <montant> [nombre] [signataire]` | `givenote` | Donne des chèques à un joueur. | `shwithdraw.admin.givecashnote` |
+| `/shwithdraw givecashnoteall <montant> [nombre] [signataire]` | — | Donne des chèques à tous les joueurs en ligne. | `shwithdraw.admin.givecashnoteall` |
+| `/shwithdraw givexpbottle <joueur> <xp> [nombre] [enchanteur]` | `givexpb` | Donne des bouteilles d'EXP à un joueur. | `shwithdraw.admin.givexpbottle` |
+| `/shwithdraw givexpbottleall <xp> [nombre] [enchanteur]` | `givexpball` | Donne des bouteilles d'EXP à tous les joueurs en ligne. | `shwithdraw.admin.givexpbottleall` |
+| `/shwithdraw info` | — | Affiche le type et la valeur réellement stockée (celle qui sera encaissée) de l'objet tenu en main. | `shwithdraw.admin.info` |
+| `/shwithdraw reload` | — | Recharge `config.yml` et `messages.yml`. Un fichier YAML invalide laisse l'ancienne configuration en place et affiche le fichier et la ligne de l'erreur. | `shwithdraw.admin.reload` |
+
+Les sous-commandes de `/shwithdraw` marchent en console, sauf `info`. L'encaissement se fait par clic droit sur l'objet (`shwithdraw.cheque.redeem`, `shwithdraw.xpbottle.redeem`).
 
 ## Permissions
 
 | Permission | Description | Par défaut |
 |---|---|---|
-| `shwithdraw.cheque.withdraw` | /cheque (shwithdraw.cheque.withdraw.all pour /cheque all) | `false` |
+| `shwithdraw.cheque.withdraw` | `/cheque` | `false` |
+| `shwithdraw.cheque.withdraw.all` | `/cheque all` | `op` |
 | `shwithdraw.cheque.redeem` | Encaisser un chèque | `false` |
-| `shwithdraw.xpbottle.withdraw` | /xpbottle (shwithdraw.xpbottle.withdraw.all pour /xpbottle all) | `false` |
+| `shwithdraw.xpbottle.withdraw` | `/xpbottle` | `false` |
+| `shwithdraw.xpbottle.withdraw.all` | `/xpbottle all` | `op` |
 | `shwithdraw.xpbottle.redeem` | Boire une bouteille d'EXP | `false` |
-| `shwithdraw.admin` | Commandes /shwithdraw (give, reload) et contournement des limites et taxes | `op` |
+| `shwithdraw.bypass` | Pas de minimum, de maximum ni de taxe sur `/cheque` et `/xpbottle` | `op` |
+| `shwithdraw.admin` | Toutes les sous-commandes de `/shwithdraw` et `shwithdraw.bypass` | `op` |
+| `shwithdraw.admin.givecashnote`, `.givecashnoteall`, `.givexpbottle`, `.givexpbottleall`, `.info`, `.reload` | Une permission par sous-commande de `/shwithdraw` | `op` |
 
 ## Configuration
 

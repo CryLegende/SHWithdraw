@@ -28,6 +28,10 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.StringUtil;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -38,7 +42,14 @@ import java.util.UUID;
 
 public class SHWithdraw extends JavaPlugin implements Listener, CommandExecutor, TabCompleter {
 
-    private static final String ADMIN = "shwithdraw.admin";
+    private static final String BYPASS = "shwithdraw.bypass";
+    private static final String ADMIN_PREFIX = "shwithdraw.admin.";
+    // Sous-commandes d'administration, dans l'ordre de la ligne d'usage
+    private static final List<String> ADMIN_SUBCOMMANDS = List.of("givecashnote", "givecashnoteall", "givexpbottle",
+        "givexpbottleall", "info", "reload");
+    // Anciens noms acceptés
+    private static final Map<String, String> ADMIN_ALIASES = Map.of("givenote", "givecashnote", "givexpb", "givexpbottle",
+        "givexpball", "givexpbottleall");
     // Valeurs de logs.<objet>.<clé> quand elles manquent dans config.yml
     private static final Map<String, String> LOG_DEFAULTS = Map.of(
         "cheque.fichier", "cheques",
@@ -55,7 +66,7 @@ public class SHWithdraw extends JavaPlugin implements Listener, CommandExecutor,
     // Le clic droit arrive parfois deux fois (main + seconde main) : un encaissement par clic
     private final Set<UUID> redeemDelay = new HashSet<>();
     private Economy economy;
-    private YamlConfiguration messages;
+    private volatile YamlConfiguration messages;
     private boolean dropOnFloor;
     private boolean wholeAmounts;
     private boolean blockCrafts;
@@ -81,16 +92,60 @@ public class SHWithdraw extends JavaPlugin implements Listener, CommandExecutor,
 
     private void loadSettings() {
         reloadConfig();
-        if (!new File(getDataFolder(), "messages.yml").exists()) {
+        File file = new File(getDataFolder(), "messages.yml");
+        if (!file.exists()) {
             saveResource("messages.yml", false);
         }
-        messages = YamlConfiguration.loadConfiguration(new File(getDataFolder(), "messages.yml"));
+        YamlConfiguration loaded;
+        try {
+            loaded = ReloadException.read(file);
+        } catch (ReloadException e) {
+            getLogger().warning("messages.yml illisible, textes du jar utilisés : " + e.getMessage());
+            loaded = new YamlConfiguration();
+        }
+        applyMessages(loaded);
+        applyConfig();
+    }
+
+    /** Une clé absente de messages.yml reprend le texte du jar. */
+    private void applyMessages(YamlConfiguration loaded) {
+        try (InputStream in = getResource("messages.yml")) {
+            if (in != null) {
+                loaded.setDefaults(YamlConfiguration.loadConfiguration(new InputStreamReader(in, StandardCharsets.UTF_8)));
+            }
+        } catch (IOException e) {
+            getLogger().warning("messages.yml du jar illisible : " + e.getMessage());
+        }
+        messages = loaded;
+    }
+
+    private void applyConfig() {
         dropOnFloor = getConfig().getBoolean("deposer-au-sol", true);
         wholeAmounts = getConfig().getBoolean("montants-entiers", true);
         blockCrafts = getConfig().getBoolean("bloquer-crafts", true);
         blockVillagers = getConfig().getBoolean("bloquer-villageois", true);
         cash.load(getConfig().getConfigurationSection("cheque"));
         xp.load(getConfig().getConfigurationSection("bouteille"));
+    }
+
+    /**
+     * Relit config.yml et messages.yml. Un fichier illisible laisse tout en l'état : l'erreur (fichier, ligne,
+     * problème) est donnée à l'expéditeur et à la console.
+     */
+    private void reloadFiles(CommandSender sender) {
+        YamlConfiguration loadedMessages;
+        try {
+            ReloadException.read(new File(getDataFolder(), "config.yml"));
+            loadedMessages = ReloadException.read(new File(getDataFolder(), "messages.yml"));
+        } catch (ReloadException e) {
+            getLogger().warning("Rechargement refusé, ancienne configuration conservée : " + e.getMessage());
+            msg(sender, "reload-failed", "%file%", e.file(), "%line%", e.line(), "%error%", e.problem());
+            return;
+        }
+        reloadConfig();
+        applyMessages(loadedMessages);
+        applyConfig();
+        msg(sender, "recharge");
     }
 
     // ------------------------------------------------------------------ retrait (/cheque, /xpbottle)
@@ -157,7 +212,7 @@ public class SHWithdraw extends JavaPlugin implements Listener, CommandExecutor,
             amount = Math.floor(amount);
         }
 
-        boolean bypass = player.hasPermission(ADMIN);
+        boolean bypass = player.hasPermission(BYPASS);
         if (amount <= 0 || (!bypass && amount < type.min)) {
             msg(player, type.id + ".min", "%min-amount%", type.format(type.min));
             return true;
@@ -201,11 +256,13 @@ public class SHWithdraw extends JavaPlugin implements Listener, CommandExecutor,
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
         if (command.getName().equals("shwithdraw")) {
-            if (args.length == 1 && sender.hasPermission(ADMIN)) {
-                return StringUtil.copyPartialMatches(args[0], List.of("givecashnote", "givecashnoteall",
-                    "givexpbottle", "givexpbottleall", "reload", "help"), new ArrayList<>());
+            List<String> allowed = allowedAdmin(sender);
+            if (args.length == 1) {
+                return StringUtil.copyPartialMatches(args[0], allowed, new ArrayList<>());
             }
-            return args.length == 2 && !args[0].toLowerCase(Locale.ROOT).endsWith("all") ? null : List.of();
+            String sub = ADMIN_ALIASES.getOrDefault(args[0].toLowerCase(Locale.ROOT), args[0].toLowerCase(Locale.ROOT));
+            boolean needsPlayer = sub.equals("givecashnote") || sub.equals("givexpbottle");
+            return args.length == 2 && needsPlayer && allowed.contains(sub) ? null : List.of();
         }
         if (args.length == 1) {
             return StringUtil.copyPartialMatches(args[0], List.of("all"), new ArrayList<>());
@@ -215,24 +272,59 @@ public class SHWithdraw extends JavaPlugin implements Listener, CommandExecutor,
 
     // ------------------------------------------------------------------ administration (/shwithdraw)
 
+    /** Sous-commandes de /shwithdraw que l'expéditeur a le droit d'utiliser. */
+    private static List<String> allowedAdmin(CommandSender sender) {
+        List<String> allowed = new ArrayList<>();
+        for (String sub : ADMIN_SUBCOMMANDS) {
+            if (sender.hasPermission(ADMIN_PREFIX + sub)) {
+                allowed.add(sub);
+            }
+        }
+        return allowed;
+    }
+
     private boolean onAdmin(CommandSender sender, String[] args) {
-        if (!sender.hasPermission(ADMIN)) {
+        List<String> allowed = allowedAdmin(sender);
+        if (allowed.isEmpty()) {
             msg(sender, "pas-de-permission");
             return true;
         }
-        String sub = args.length == 0 ? "help" : args[0].toLowerCase(Locale.ROOT);
+        String typed = args.length == 0 ? "" : args[0].toLowerCase(Locale.ROOT);
+        String sub = ADMIN_ALIASES.getOrDefault(typed, typed);
+        if (!ADMIN_SUBCOMMANDS.contains(sub)) {
+            msg(sender, "usage-line", "%commands%", String.join("|", allowed));
+            return true;
+        }
+        if (!allowed.contains(sub)) {
+            msg(sender, "pas-de-permission");
+            return true;
+        }
         switch (sub) {
-            case "reload" -> {
-                loadSettings();
-                msg(sender, "recharge");
-            }
-            case "givecashnote", "givenote" -> give(sender, cash, args, false);
+            case "reload" -> reloadFiles(sender);
+            case "info" -> info(sender);
+            case "givecashnote" -> give(sender, cash, args, false);
             case "givecashnoteall" -> give(sender, cash, args, true);
-            case "givexpbottle", "givexpb" -> give(sender, xp, args, false);
-            case "givexpbottleall", "givexpball" -> give(sender, xp, args, true);
-            default -> messages.getStringList("aide-admin").forEach(line -> sender.sendMessage(NoteType.color(line)));
+            case "givexpbottle" -> give(sender, xp, args, false);
+            default -> give(sender, xp, args, true);
         }
         return true;
+    }
+
+    /** Objet tenu en main : type et valeur réellement stockée (celle qui sera encaissée). */
+    private void info(CommandSender sender) {
+        if (!(sender instanceof Player player)) {
+            msg(sender, "console");
+            return;
+        }
+        ItemStack item = player.getInventory().getItemInMainHand();
+        NoteType type = typeOf(item);
+        if (type == null) {
+            msg(player, "info-none");
+            return;
+        }
+        msg(player, "info", "%type%", type == cash ? "chèque" : "bouteille d'EXP",
+            "%amount%", type.format(type.read(item)), "%unit%", type == cash ? "SHCoins" : "EXP",
+            "%count%", String.valueOf(item.getAmount()));
     }
 
     /**
@@ -241,7 +333,7 @@ public class SHWithdraw extends JavaPlugin implements Listener, CommandExecutor,
     private void give(CommandSender sender, NoteType type, String[] args, boolean all) {
         int first = all ? 1 : 2;
         if (args.length <= first) {
-            messages.getStringList("aide-admin").forEach(line -> sender.sendMessage(NoteType.color(line)));
+            msg(sender, "usage-give" + (type == cash ? "cashnote" : "xpbottle") + (all ? "all" : ""));
             return;
         }
         List<Player> targets = new ArrayList<>();

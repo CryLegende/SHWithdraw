@@ -7,15 +7,26 @@
 # Commandes :
 #   /cheque <montant|all> [nombre]            Transforme des SHCoins en chèque.
 #   /xpbottle <xp|all|<niveaux>l> [nombre]    Met de l'EXP en bouteille.
-#   /shwithdraw <givecashnote|givecashnoteall|givexpbottle|givexpbottleall|reload>
-#                                             Donne des chèques ou des bouteilles, recharge la configuration.
+#   /shwithdraw givecashnote <joueur> <montant> [nombre] [signataire]    Donne des chèques à un joueur.
+#   /shwithdraw givecashnoteall <montant> [nombre] [signataire]          Donne des chèques à tous les joueurs en ligne.
+#   /shwithdraw givexpbottle <joueur> <xp> [nombre] [enchanteur]         Donne des bouteilles d'EXP à un joueur.
+#   /shwithdraw givexpbottleall <xp> [nombre] [enchanteur]               Donne des bouteilles d'EXP à tous les joueurs en ligne.
+#   /shwithdraw info                          Valeur stockée dans le chèque ou la bouteille tenu en main.
+#   /shwithdraw reload                        Recharge config.yml et messages.yml. Un fichier YAML invalide laisse
+#                                             l'ancienne configuration en place et affiche le fichier et la ligne.
+#   Les sous-commandes de /shwithdraw marchent en console, sauf info. Anciens noms acceptés : givenote, givexpb, givexpball.
 #
 # Permissions :
-#   shwithdraw.cheque.withdraw    Créer un chèque (.all pour /cheque all).
-#   shwithdraw.cheque.redeem      Encaisser un chèque.
-#   shwithdraw.xpbottle.withdraw  Créer une bouteille d'EXP (.all pour /xpbottle all).
-#   shwithdraw.xpbottle.redeem    Utiliser une bouteille d'EXP.
-#   shwithdraw.admin              Commandes /shwithdraw, sans limite ni taxe.
+#   shwithdraw.cheque.withdraw        Créer un chèque.
+#   shwithdraw.cheque.withdraw.all    /cheque all (op par défaut).
+#   shwithdraw.cheque.redeem          Encaisser un chèque.
+#   shwithdraw.xpbottle.withdraw      Créer une bouteille d'EXP.
+#   shwithdraw.xpbottle.withdraw.all  /xpbottle all (op par défaut).
+#   shwithdraw.xpbottle.redeem        Utiliser une bouteille d'EXP.
+#   shwithdraw.bypass                 Pas de minimum, de maximum ni de taxe sur /cheque et /xpbottle (op par défaut).
+#   shwithdraw.admin                  Toutes les sous-commandes de /shwithdraw et shwithdraw.bypass (op par défaut).
+#   shwithdraw.admin.givecashnote, .givecashnoteall, .givexpbottle, .givexpbottleall, .info, .reload
+#                                     Une permission par sous-commande, pour en déléguer une partie au staff (op par défaut).
 
 # Objet posé au sol si l'inventaire est plein (sinon la création est refusée)
 deposer-au-sol: true

@@ -1,4 +1,4 @@
-# Messages envoyés aux joueurs par SHWithdraw.
+# Messages envoyés par SHWithdraw. Une clé absente de ce fichier reprend le texte du jar.
 
 pas-un-nombre: '&7&l« &c&lSH &8&l» &7&c%amount% &7n''est pas un nombre valide.'
 pas-de-permission: '&7&l« &c&lSH &8&l» &7Vous n''avez pas la &cpermission&7.'
@@ -8,12 +8,17 @@ inventaire-plein: '&7&l« &c&lSH &8&l» &7Votre inventaire est &cplein&7.'
 joueur-introuvable: '&7&l« &c&lSH &8&l» &7Le joueur &c%player% &7n''est pas en ligne.'
 craft-bloque: '&7&l« &c&lSH &8&l» &7Les chèques et bouteilles d''EXP ne peuvent pas être &cutilisés ici&7.'
 recharge: '&7&l« &a&lSH &8&l» &7Configuration &arechargée&7.'
-aide-admin:
-  - '&7&l« &e&lSH &8&l» &e/shwithdraw givecashnote <joueur> <montant> [nombre] [signataire]'
-  - '&7&l« &e&lSH &8&l» &e/shwithdraw givecashnoteall <montant> [nombre] [signataire]'
-  - '&7&l« &e&lSH &8&l» &e/shwithdraw givexpbottle <joueur> <xp> [nombre] [enchanteur]'
-  - '&7&l« &e&lSH &8&l» &e/shwithdraw givexpbottleall <xp> [nombre] [enchanteur]'
-  - '&7&l« &e&lSH &8&l» &e/shwithdraw reload'
+# /shwithdraw sans sous-commande ou avec une sous-commande inconnue. %commands% : les sous-commandes que l'expéditeur peut utiliser.
+usage-line: '&7&l« &e&lSH &8&l» &7Utilisation : &e/shwithdraw &7<&e%commands%&7>'
+usage-givecashnote: '&7&l« &e&lSH &8&l» &7Utilisation : &e/shwithdraw givecashnote <joueur> <montant> [nombre] [signataire]'
+usage-givecashnoteall: '&7&l« &e&lSH &8&l» &7Utilisation : &e/shwithdraw givecashnoteall <montant> [nombre] [signataire]'
+usage-givexpbottle: '&7&l« &e&lSH &8&l» &7Utilisation : &e/shwithdraw givexpbottle <joueur> <xp> [nombre] [enchanteur]'
+usage-givexpbottleall: '&7&l« &e&lSH &8&l» &7Utilisation : &e/shwithdraw givexpbottleall <xp> [nombre] [enchanteur]'
+# /shwithdraw info : objet tenu en main. %type% : chèque ou bouteille d'EXP, %amount% : valeur stockée, %unit% : SHCoins ou EXP, %count% : quantité dans la pile
+info: '&7&l« &e&lSH &8&l» &7Objet en main : &e%type% &7de &e%amount% %unit% &7(valeur encaissable, x%count%)'
+info-none: '&7&l« &c&lSH &8&l» &7Tenez un &cchèque &7ou une &cbouteille d''EXP &7en main.'
+# Fichier YAML illisible : l'ancienne configuration reste en place. %file% : fichier, %line% : ligne, %error% : problème relevé.
+reload-failed: '&7&l« &c&lSH &8&l» &7Rechargement &cimpossible &7: &c%file% &7ligne &c%line%&7, %error%. Ancienne configuration conservée.'
 admin-donne: '&7&l« &a&lSH &8&l» &e%player% &7a reçu &a%received-amount% &7%note-amount%'
 cheque:
   aide: "&7&l« &e&lSH &8&l» &fVous avez &e%balance% SHCoins\n&7&l« &6&lSH &8&l» &7Utilisez &6/cheque <montant>/<all> <nombre>"
@@ -27,7 +32,7 @@ cheque:
   taxe: '&7&l« &e&lSH &8&l» &7Vous avez payé &e%tax% SHC &7de taxes pour cette transaction'
   echec: '&7&l« &c&lSH &8&l» &7Transaction échouée, veuillez essayer avec un autre montant!'
 bouteille:
-  aide: "&7&l« &a&lSH &8&l» &fVous avez &a%balance% EXP\n&7&l« &6&lSH &8&l» &7Utilisez &6/xpBottle <xp>/<all>/<xp>L <nombre>"
+  aide: "&7&l« &a&lSH &8&l» &fVous avez &a%balance% EXP\n&7&l« &6&lSH &8&l» &7Utilisez &6/xpbottle <xp>/<all>/<xp>L <nombre>"
   pas-assez: '&7&l« &c&lSH &8&l» &7Vous n''avez pas assez d''EXP ! (&c%balance%&7/&c%taken-amount%&7)'
   pas-assez-niveaux: '&7&l« &c&lSH &8&l» &7Vous n''avez pas assez d''EXP !'
   creation: '&7&l« &a&lSH &8&l» &7Experience mise en bouteille, &6-%taken-amount% EXP'
