@@ -21,22 +21,22 @@ commands:
 permissions:
   shwithdraw.cheque.withdraw:
     description: /cheque
-    default: false
+    default: op
   shwithdraw.cheque.withdraw.all:
     description: /cheque all
     default: op
   shwithdraw.cheque.redeem:
     description: Encaisser un chèque
-    default: false
+    default: op
   shwithdraw.xpbottle.withdraw:
     description: /xpbottle
-    default: false
+    default: op
   shwithdraw.xpbottle.withdraw.all:
     description: /xpbottle all
     default: op
   shwithdraw.xpbottle.redeem:
     description: Boire une bouteille d'EXP
-    default: false
+    default: op
   shwithdraw.bypass:
     description: Pas de minimum, de maximum ni de taxe sur /cheque et /xpbottle
     default: op

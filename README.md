@@ -44,12 +44,12 @@ Les sous-commandes de `/shwithdraw` marchent en console, sauf `info`. L'encaisse
 
 | Permission | Description | Par défaut |
 |---|---|---|
-| `shwithdraw.cheque.withdraw` | `/cheque` | `false` |
+| `shwithdraw.cheque.withdraw` | `/cheque` | `op` |
 | `shwithdraw.cheque.withdraw.all` | `/cheque all` | `op` |
-| `shwithdraw.cheque.redeem` | Encaisser un chèque | `false` |
-| `shwithdraw.xpbottle.withdraw` | `/xpbottle` | `false` |
+| `shwithdraw.cheque.redeem` | Encaisser un chèque | `op` |
+| `shwithdraw.xpbottle.withdraw` | `/xpbottle` | `op` |
 | `shwithdraw.xpbottle.withdraw.all` | `/xpbottle all` | `op` |
-| `shwithdraw.xpbottle.redeem` | Boire une bouteille d'EXP | `false` |
+| `shwithdraw.xpbottle.redeem` | Boire une bouteille d'EXP | `op` |
 | `shwithdraw.bypass` | Pas de minimum, de maximum ni de taxe sur `/cheque` et `/xpbottle` | `op` |
 | `shwithdraw.admin` | Toutes les sous-commandes de `/shwithdraw` et `shwithdraw.bypass` | `op` |
 | `shwithdraw.admin.givecashnote`, `.givecashnoteall`, `.givexpbottle`, `.givexpbottleall`, `.info`, `.reload` | Une permission par sous-commande de `/shwithdraw` | `op` |
