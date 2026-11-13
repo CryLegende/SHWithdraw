@@ -75,8 +75,8 @@ bouteille:
     - '&fExperience condensée en bouteille'
     - ''
     - '&aValeur: &7%amount% EXP'
-  min: 25
-  max: 30970
+  min: 10
+  max: 10000
   max-par-commande: 64
   taxe: 1
   format: '###,##0'
